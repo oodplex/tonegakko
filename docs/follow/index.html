@@ -1,0 +1,374 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MPL-2.0
+     Tonegakko followed in Chrome (app/follow.c): the FM-1 sends the game's state as it changes, over USB-MIDI, and
+     follow.wasm (the app itself, built to draw only: site/follow_web.c) draws each frame here, as the FM-1 draws it.
+     site/make_follow.py fills in TONEGAKKO and 0.40-beta1 and puts record.js in. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Follow · TONEGAKKO</title>
+<meta name="description" content="The FM-1's screen in Chrome or Edge, drawn here from the game's state as it plays, to watch, save or record with the FM-1's sound.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Semi+Condensed:wght@600;700&display=swap">
+<style>
+:root { --ground: #faf4e8; --ink: #48392f; --muted: #725f4c; --rule: #e6dccb; --accent: #e0683a; --teal: #1f8a80; --card: #fffaf1;
+        --accent-ink: #b4481c; --warn: #b4481c; color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ground: #1c1814; --ink: #f2e8d8; --muted: #b3a28e; --rule: #3a322a; --accent: #f28a5a;
+                                    --teal: #4cc3b6; --card: #26201b; --accent-ink: #f28a5a; --warn: #f2a07a; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --ground: #1c1814; --ink: #f2e8d8; --muted: #b3a28e; --rule: #3a322a; --accent: #f28a5a; --teal: #4cc3b6;
+                           --card: #26201b; --accent-ink: #f28a5a; --warn: #f2a07a; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--ground); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 24px 48px;
+       font: 400 16px/1.55 "Barlow", "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem 1.2rem; margin: 0 0 .8rem; }
+h1 { font: 700 2rem/1.1 "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0; }
+header p { margin: 0; color: var(--muted); }
+a { color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.bar { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; margin: 0 0 1rem; padding: .6rem .8rem;
+       background: var(--card); border: 1px solid var(--rule); border-radius: 12px; font-size: .95rem; }
+.bar label { color: var(--muted); display: inline-flex; gap: .4rem; align-items: center; }
+.bar select, .bar button { font: inherit; color: var(--ink); background: var(--ground); border: 1px solid var(--rule);
+                           border-radius: 8px; padding: .25em .6em; max-width: 14rem; }
+.bar button { cursor: pointer; }
+.bar button:disabled { cursor: default; opacity: .55; }
+.bar button.primary { background: var(--accent); border-color: var(--accent); color: #2a140a; font-weight: 600; }
+.bar button[aria-pressed="true"] { border-color: var(--warn); box-shadow: inset 0 0 0 1px var(--warn); color: var(--warn); font-weight: 600; }
+.dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--rule); display: inline-block; flex: none; }
+.dot.on { background: var(--teal); }
+.dot.wait { background: #e2a63c; }
+.dot.err { background: var(--warn); }
+#status { flex: 1 1 16rem; min-width: 0; }
+.nums { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; flex: none; }
+.stage { display: flex; justify-content: center; }
+#screen { display: block; width: 480px; max-width: calc(100vw - 54px); aspect-ratio: 1; image-rendering: pixelated;
+          image-rendering: crisp-edges; background: #000; border-radius: 6px; box-shadow: 0 0 0 10px #111214, 0 0 0 11px var(--rule);
+          margin: 11px; }
+.help { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem 2rem; margin: 1.8rem 0 0; }
+.help h2 { font: 600 1.1rem "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0 0 .3rem; }
+.help p { margin: 0 0 .5rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Follow</h1>
+  <p>TONEGAKKO 0.40-beta1: the FM-1's screen, drawn here from the game as it plays.</p>
+</header>
+<div class="bar" role="group" aria-label="Following">
+  <button id="connect" class="primary" type="button">Connect</button>
+  <label hidden id="portLabel">FM-1 <select id="port" aria-label="The FM-1's MIDI port"></select></label>
+  <span class="dot" id="dot" aria-hidden="true"></span>
+  <span id="status" role="status">Plug the FM-1 in by USB, then press Connect and allow MIDI with SysEx.</span>
+  <span class="nums" id="nums" aria-hidden="true"></span>
+</div>
+<div class="bar" role="group" aria-label="Saving">
+  <button id="rec" type="button" aria-pressed="false" title="Record the screen (and the FM-1's sound) as a video">Record</button>
+  <label>Sound <select id="recSound" aria-label="The sound to record with the screen"></select></label>
+  <button id="png" type="button" title="Save the screen as a PNG, three times its size">Save PNG</button>
+</div>
+<div class="stage"><canvas id="screen" width="240" height="240" aria-label="The FM-1's screen"></canvas></div>
+<section class="help">
+  <div>
+    <h2>How it works</h2>
+    <p>The FM-1 doesn't send its pixels. Each frame it sends only what changed in the game (where each Sonari stands, who sings, the clock), a few kilobytes a second. This page runs TONEGAKKO's own drawing on that, so the picture is the FM-1's, pixel for pixel, at its frame rate.</p>
+  </div>
+  <div>
+    <h2>Recording</h2>
+    <p><b>Record</b> saves a WebM video, 720 by 720. Under <b>Sound</b> choose the FM-1 (it's a USB audio input, TONEGAKKO FM-1). Chrome asks first. Keep this tab in front while recording: Chrome pauses pages in the background.</p>
+  </div>
+  <div>
+    <h2>If nothing shows</h2>
+    <p>The FM-1 needs TONEGAKKO 0.21 or later, and Chrome or Edge. Close other pages using the FM-1's MIDI (the installer, a DAW's SysEx). Nothing leaves your computer.</p>
+  </div>
+</section>
+</main>
+<script>
+"use strict";
+const VERSION = "0.40-beta1";
+const $ = (id) => document.getElementById(id);
+const screenEl = $("screen"), sctx = screenEl.getContext("2d"), img = sctx.createImageData(240, 240);
+const dotEl = $("dot"), statusEl = $("status"), numsEl = $("nums"), connectBtn = $("connect"), portSel = $("port");
+let ex = null, mem = null, access = null, inPort = null, outPort = null, token = 0, helloT = 0, infoAt = 0, sentAt = 0;
+let dirty = false, lastFrames = 0, lastBytes = 0, lastTick = performance.now(), told = "", theirs = "";
+
+function say(text, kind) {
+  if (told === text + kind) return;
+  told = text + kind;
+  statusEl.textContent = text;
+  dotEl.className = "dot" + (kind ? " " + kind : "");
+}
+
+// the app, built to draw only
+async function load() {
+  const wasi = {
+    clock_time_get: (id, prec, out) => { new DataView(mem.buffer).setBigUint64(out, BigInt(Math.round(performance.now() * 1e6)), true); return 0; },
+    fd_write: (fd, iov, n, out) => { new DataView(mem.buffer).setUint32(out, 0, true); return 0; },
+    proc_exit: () => {},
+  };
+  const stub = (t) => new Proxy(t, { get: (o, k) => (k in o ? o[k] : () => 0) });
+  const bytes = await (await fetch("follow.wasm")).arrayBuffer();
+  const { instance } = await WebAssembly.instantiate(bytes, { wasi_snapshot_preview1: stub(wasi), env: stub({}) });
+  ex = instance.exports;
+  mem = ex.memory;
+  ex._initialize?.();
+  ex.fw_boot();
+}
+
+// what the FM-1 says: F0 7D 54 47 CMD ... F7
+function heard(e) {
+  const d = e.data;
+  if (d.length < 6 || d[0] !== 0xF0 || d[1] !== 0x7D || d[2] !== 0x54 || d[3] !== 0x47) return;
+  if (d[4] === 1 && ex) {                               // a frame
+    const n = d.length - 6;
+    new Uint8Array(mem.buffer, ex.fw_in_buf(), n).set(d.subarray(5, 5 + n));
+    const r = ex.fw_frame(n);
+    if (r === 1) dirty = true;
+    else if (r < 0) again();                            // one lost: all of it again
+  } else if (d[4] === 2) {                              // INFO: the build, the state's layout
+    let i = 6, v = "";
+    while (i < d.length && d[i]) v += String.fromCharCode(d[i++]);
+    let p = 0;
+    for (let s = 0; s < 5; s++) p += d[i + 1 + s] * 2 ** (7 * s);
+    infoAt = performance.now();
+    theirs = v;
+    if (ex && p >>> 0 !== ex.fw_print() >>> 0)
+      say(`The FM-1 runs TONEGAKKO ${v}; this page is ${VERSION}. Use the follow page from the same version's installer.`, "err");
+    else if (ex && ex.fw_drawn() > 0)
+      say(`Following TONEGAKKO ${v} on ${inPort ? inPort.name : "the FM-1"}.`, "on");
+    else
+      say(`TONEGAKKO ${v} answered. Catching up...`, "wait");
+  }
+}
+
+function send(bytes) { try { outPort?.send(bytes); } catch { /* the port went away */ } }
+function hello() { if (token) { send([0xF0, 0x7D, 0x54, 0x47, 0, token, 0xF7]); sentAt = sentAt || performance.now(); } }
+function again() {                                     // a new token: the FM-1 sends everything again
+  token = token % 127 + 1;
+  ex?.fw_restart(token);
+  hello();
+}
+
+// the FM-1's port: by name, or the one picked
+const looksLikeFm1 = (n) => /tonegakko|fm-?1|m-?vave/i.test(n || "");
+function ports() {
+  const ins = [...access.inputs.values()];
+  const keep = portSel.value;
+  portSel.textContent = "";
+  for (const p of ins) portSel.add(new Option(p.name, p.id));
+  $("portLabel").hidden = ins.length < 2;
+  const pick = ins.find((p) => p.id === keep) || ins.find((p) => looksLikeFm1(p.name)) || ins[0];
+  if (pick) portSel.value = pick.id;
+  attach(pick);
+}
+function attach(inp) {
+  if (inPort && inPort !== inp) inPort.onmidimessage = null;
+  inPort = inp || null;
+  outPort = inp ? [...access.outputs.values()].find((o) => o.name === inp.name)
+                  || [...access.outputs.values()].find((o) => looksLikeFm1(o.name)) || null : null;
+  if (!inPort || !outPort) { say("No FM-1 found. Plug it in by USB (it shows as TONEGAKKO FM-1).", "err"); return; }
+  inPort.onmidimessage = heard;
+  sentAt = infoAt = 0;
+  again();
+  say(`Asking ${inPort.name}...`, "wait");
+}
+portSel.addEventListener("change", () => attach(access.inputs.get(portSel.value)));
+
+async function connect() {
+  if (!navigator.requestMIDIAccess) { say("This browser has no Web MIDI. Use Chrome or Edge.", "err"); return; }
+  try {
+    if (!ex) await load();
+  } catch (e) {
+    say("The page couldn't load follow.wasm. Open it through the installer's server (see README.txt).", "err");
+    return;
+  }
+  try {
+    access = await navigator.requestMIDIAccess({ sysex: true });
+  } catch (e) {
+    say("MIDI wasn't allowed. Press Connect again and allow MIDI with SysEx.", "err");
+    return;
+  }
+  connectBtn.hidden = true;
+  access.onstatechange = (e) => { if (e.port.type === "input" || !outPort) ports(); };
+  ports();
+  clearInterval(helloT);
+  helloT = setInterval(() => {
+    hello();
+    if (outPort && sentAt && !infoAt && performance.now() - sentAt > 3000)
+      say("No answer. Is the FM-1 on TONEGAKKO 0.21 or later? Is another page using its MIDI?", "err");
+  }, 1000);
+}
+connectBtn.addEventListener("click", connect);
+navigator.permissions?.query({ name: "midi", sysex: true }).then((p) => { if (p.state === "granted") connect(); }).catch(() => {});
+addEventListener("pagehide", () => send([0xF0, 0x7D, 0x54, 0x47, 4, 0xF7]));
+
+// the picture: the follower's screen (RGB565, as the panel takes it) onto the canvas, when a frame was drawn
+const R5 = new Uint8Array(32).map((_, i) => Math.round(i * 255 / 31)), G6 = new Uint8Array(64).map((_, i) => Math.round(i * 255 / 63));
+function paint() {
+  if (dirty && ex) {
+    dirty = false;
+    const fb = new Uint16Array(mem.buffer, ex.fw_fb(), 240 * 240), d = img.data;
+    for (let i = 0, o = 0; i < 240 * 240; i++, o += 4) {
+      const v = ((fb[i] >> 8) | (fb[i] << 8)) & 0xFFFF;
+      d[o] = R5[v >> 11]; d[o + 1] = G6[(v >> 5) & 63]; d[o + 2] = R5[v & 31]; d[o + 3] = 255;
+    }
+    sctx.putImageData(img, 0, 0);
+  }
+  const now = performance.now();
+  if (ex && now - lastTick >= 1000) {
+    const f = ex.fw_drawn(), b = ex.fw_bytes();
+    numsEl.textContent = f ? `${Math.round((f - lastFrames) * 1000 / (now - lastTick))} updates/s · ${((b - lastBytes) / (now - lastTick)).toFixed(1)} KB/s` : "";
+    if (f > lastFrames && dotEl.className !== "dot err" && infoAt)
+      say(`Following TONEGAKKO ${theirs} on ${inPort ? inPort.name : "the FM-1"}.`, "on");
+    if (f === lastFrames && infoAt && now - infoAt > 3000) say("The FM-1 stopped answering.", "wait");
+    lastFrames = f; lastBytes = b; lastTick = now;
+  }
+  requestAnimationFrame(paint);
+}
+requestAnimationFrame(paint);
+
+$("png").addEventListener("click", () => {
+  const c = document.createElement("canvas");
+  c.width = c.height = 720;
+  const x = c.getContext("2d");
+  x.imageSmoothingEnabled = false;
+  x.drawImage(screenEl, 0, 0, 720, 720);
+  c.toBlob((b) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = `tonegakko-${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }, "image/png");
+});
+</script>
+<script>
+// SPDX-License-Identifier: MPL-2.0
+// Tonegakko's screen recorder, on the follow page (site/follow.html, made by site/make_follow.py): Record saves what
+// the page draws, three times its size with its pixels kept square, and the FM-1's sound if Chrome can hear it (the
+// FM-1 is a USB audio input: TONEGAKKO FM-1), as a WebM video.
+(() => {
+  "use strict";
+  const screen = document.getElementById("screen");
+  const btn = document.getElementById("rec");
+  const soundSel = document.getElementById("recSound");
+  const SCALE = 3, FPS = 30;
+  let rec = null, chunks = [], timer = 0, started = 0, raf = 0, mic = null;
+  const out = document.createElement("canvas");
+  out.width = out.height = 240 * SCALE;
+  const octx = out.getContext("2d");
+  octx.imageSmoothingEnabled = false;
+
+  const looksLikeFm1 = (label) => /tonegakko|fm-?1|m-?vave/i.test(label || "");
+
+  async function listSound() {          // the audio inputs (named once Chrome may listen), the FM-1's chosen
+    let devs = [];
+    try {
+      devs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "audioinput");
+    } catch (e) { /* none */ }
+    const keep = soundSel.value, named = devs.some((d) => d.label);
+    let fm1 = "";
+    soundSel.textContent = "";
+    soundSel.add(new Option("No sound", "none"));
+    if (!named)
+      soundSel.add(new Option("The FM-1's sound (Chrome asks first)", "ask"));
+    else
+      devs.forEach((d, i) => {
+        soundSel.add(new Option(d.label || `Input ${i + 1}`, d.deviceId));
+        if (!fm1 && looksLikeFm1(d.label)) fm1 = d.deviceId;
+      });
+    const has = (v) => [...soundSel.options].some((o) => o.value === v);
+    soundSel.value = keep && keep !== "ask" && has(keep) ? keep : fm1 || (named ? "none" : "ask");
+  }
+
+  async function openSound() {          // the chosen input, untouched (no echo cancelling, no levelling)
+    const pick = soundSel.value;
+    if (pick === "none") return null;
+    const raw = { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 2 };
+    try {
+      if (pick === "ask") {             // first time: may Chrome listen? then find the FM-1 by its name
+        const s = await navigator.mediaDevices.getUserMedia({ audio: raw });
+        s.getTracks().forEach((t) => t.stop());
+        await listSound();
+        if (soundSel.value === "ask" || soundSel.value === "none") return null;
+      }
+      return await navigator.mediaDevices.getUserMedia({ audio: { ...raw, deviceId: { exact: soundSel.value } } });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function copy() {                     // the mirror's canvas into the recorded one, each display frame
+    octx.drawImage(screen, 0, 0, out.width, out.height);
+    raf = requestAnimationFrame(copy);
+  }
+
+  function label() {
+    const s = Math.floor((performance.now() - started) / 1000);
+    btn.textContent = `Stop ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  }
+
+  async function start() {
+    btn.disabled = true;
+    mic = await openSound();
+    copy();
+    const stream = out.captureStream(FPS);
+    if (mic) mic.getAudioTracks().forEach((t) => stream.addTrack(t));
+    const types = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+    const mimeType = types.find((t) => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
+    chunks = [];
+    rec = new MediaRecorder(stream, mimeType ? { mimeType, videoBitsPerSecond: 6000000 } : {});
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = save;
+    rec.start(1000);
+    started = performance.now();
+    label();
+    timer = setInterval(label, 500);
+    btn.setAttribute("aria-pressed", "true");
+    btn.title = mic ? "Recording the screen and the FM-1's sound: click to stop and save" : "Recording the screen (no sound): click to stop and save";
+    btn.disabled = false;
+  }
+
+  function stop() {
+    if (rec && rec.state !== "inactive") rec.stop();
+  }
+
+  function save() {
+    cancelAnimationFrame(raf);
+    clearInterval(timer);
+    if (mic) mic.getTracks().forEach((t) => t.stop());
+    mic = null;
+    const blob = new Blob(chunks, { type: (rec && rec.mimeType) || "video/webm" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `tonegakko-${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}.webm`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    rec = null;
+    btn.textContent = "Record";
+    btn.setAttribute("aria-pressed", "false");
+    btn.title = "Record the screen (and the FM-1's sound) as a video";
+  }
+
+  if (!window.MediaRecorder || !out.captureStream) {
+    btn.disabled = true;
+    btn.title = "This browser cannot record a canvas (use Chrome or Edge)";
+    return;
+  }
+  btn.addEventListener("click", () => (rec ? stop() : start()));
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    listSound();
+    navigator.mediaDevices.addEventListener?.("devicechange", listSound);
+  } else {
+    soundSel.disabled = true;
+  }
+})();
+</script>
+</body>
+</html>
