@@ -84,6 +84,7 @@ main.wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4.5rem; p
 .film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 6px; background: #000 }
 
 section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.4rem; scroll-margin-top: 72px }
+#newer { scroll-margin-top: 72px }
 .head .t { display: grid; gap: .35rem }
 h2 { font: 800 clamp(1.9rem, 4.6vw, 2.6rem)/1.02 var(--label); letter-spacing: .01em; text-transform: uppercase }
 h3 { font: 700 1.3rem/1.15 var(--label); letter-spacing: .02em }
@@ -200,15 +201,16 @@ footer .wrap { display: grid; gap: .4rem }
     <div class="copy">
       <p class="label">New firmware for the M-VAVE FM-1</p>
       <h1><img class="logo" src="media/logo.png" width="404" height="120" alt="tonegakko"></h1>
-      <span class="pill">OPEN BETA · 0.40 BETA 1</span>
+      <span class="pill">OPEN BETA · 0.40 BETA 1.0.1</span>
       <p class="lede">An island, printed like a woodblock, where small creatures called the Sonari wander and sing together. What they play together becomes new styles to find. It is a calm little game and a real instrument at once: the keys always play whoever you choose.</p>
       <div class="get">
         <div class="row">
           <a class="btn" href="install/">Open the installer</a>
-          <a class="btn quiet" href="download/tonegakko-0.40-beta1-installer.zip" download>Download the zip</a>
+          <a class="btn quiet" href="download/tonegakko-0.40.1-beta1-installer.zip" download>Download the zip</a>
         </div>
         <p class="meta">The installer runs in Chrome or Edge, with the FM-1 plugged in by USB. Nothing to install on your computer.</p>
-        <div class="sum"><span class="meta">Zip SHA-256</span> <code>f678ab20470c34cd2e5934186faab84c74914ec62f285190bf589869eb133d4e</code></div>
+        <div class="sum"><span class="meta">Zip SHA-256</span> <code>11af4ef9c96ef3de9fd2bd4ca06e0f68d2094633954b03c2ba3b922c4f416a33</code></div>
+        <p class="meta"><b>New in 1.0.1:</b> it works on the newer FM-1s too (sold since autumn 2026, the logo on the front). <a href="#newer">Put beta 1 on one?</a></p>
         <p class="fine">Installing is at your own risk. The installer can put M-VAVE's own firmware back at any time. Tonegakko is not made or supported by M-VAVE.</p>
       </div>
     </div>
@@ -245,19 +247,22 @@ footer .wrap { display: grid; gap: .4rem }
           <p>It finds the FM-1, checks what it's running and writes Tonegakko. Keep the cable in until it says it's done.</p></div></li>
     </ol>
     <div class="done">
-      <figure class="screen"><img src="media/boot.png" width="240" height="240" alt="The boot screen: the tonegakko logo, COMBINE · EXPLORE · EVOLVE, and the badge 0.40-BETA1"></figure>
-      <div class="t"><h3>You're in</h3><p>The FM-1 restarts, the logo prints itself, and the badge reads <code>0.40-BETA1</code>. Then the island opens, already playing. Carry on with <a href="#play">Play</a>.</p></div>
+      <figure class="screen"><img src="media/boot.png" width="240" height="240" alt="The boot screen: the tonegakko logo, COMBINE · EXPLORE · EVOLVE, and the badge 0.40.1-BETA1"></figure>
+      <div class="t"><h3>You're in</h3><p>The FM-1 restarts, the logo prints itself, and the badge reads <code>0.40.1-BETA1</code>. Then the island opens, already playing. Carry on with <a href="#play">Play</a>.</p></div>
     </div>
     <details>
-      <summary>Something different about your FM-1, or no internet?</summary>
+      <summary>Something different about your FM-1, beta 1 on a newer FM-1, or no internet?</summary>
       <div class="body">
-        <p><b>Running M-VAVE's "Open" firmware (V10)?</b> Put M-VAVE's standard FM-1 firmware back first, then install.</p>
+        <p><b>Running M-VAVE's "FM1 Open" firmware?</b> Put M-VAVE's standard FM-1 firmware back first, then install.</p>
+        <p id="newer"><b>Put beta 1 on one of the newer FM-1s?</b> Those (sold since autumn 2026, the logo on the front) have a different memory chip, which beta 1 did not know: it played, but kept nothing after switching off, and this page cannot reach it to update it. Put M-VAVE's firmware back first: hold <b>REC</b> while you switch the FM-1 on (the chip's own update mode), plug it into a Mac or Linux computer and run felucca-bsp's rescue in a terminal. It backs the FM-1 up, then writes M-VAVE's firmware. Then install 1.0.1 here as usual.</p>
+        <div class="cmd"><pre id="c3">bash -c "$(curl -fsSL https://raw.githubusercontent.com/hugelton/felucca-bsp/main/tools/fm1_rescue.sh)"</pre><button type="button" data-copy="c3">Copy</button></div>
+        <p>On Windows, or if it does not work, <a href="https://github.com/oodplex/tonegakko/issues/new?template=beta-report.md">open an issue</a> and we will help.</p>
         <p><b>Want to go back?</b> Open the same installer: it can write M-VAVE's own FM-1 firmware again, any time.</p>
-        <p><b>Installing offline?</b> <a href="download/tonegakko-0.40-beta1-installer.zip" download>Download the zip</a>, unzip it, and serve it with Python from a terminal in the folder that holds it:</p>
-        <div class="cmd"><pre id="c1">cd tonegakko-0.40-beta1-installer &amp;&amp; python3 -m http.server 8000</pre><button type="button" data-copy="c1">Copy</button></div>
+        <p><b>Installing offline?</b> <a href="download/tonegakko-0.40.1-beta1-installer.zip" download>Download the zip</a>, unzip it, and serve it with Python from a terminal in the folder that holds it:</p>
+        <div class="cmd"><pre id="c1">cd tonegakko-0.40.1-beta1-installer &amp;&amp; python3 -m http.server 8000</pre><button type="button" data-copy="c1">Copy</button></div>
         <p>Then open <code>http://localhost:8000/install/</code> in Chrome or Edge.</p>
         <p><b>Prefer the command line?</b> With <code>pip3 install mido python-rtmidi</code> and <a href="https://github.com/charlesvestal/fm1-base">fm1-base</a>'s installer:</p>
-        <div class="cmd"><pre id="c2">python3 tools/fm1_install.py tonegakko-0.40-beta1.fwsc</pre><button type="button" data-copy="c2">Copy</button></div>
+        <div class="cmd"><pre id="c2">python3 tools/fm1_install.py tonegakko-0.40.1-beta1.fwsc</pre><button type="button" data-copy="c2">Copy</button></div>
         <p class="fine">Checksums for the zip and the firmware: <a href="download/SHA256SUMS.txt">SHA256SUMS.txt</a></p>
       </div>
     </details>
@@ -396,7 +401,7 @@ footer .wrap { display: grid; gap: .4rem }
           <li>what you did,</li>
           <li>what you expected,</li>
           <li>what happened instead,</li>
-          <li>and the version on the boot screen (<code>0.40-BETA1</code>).</li>
+          <li>and the version on the boot screen (<code>0.40.1-BETA1</code>).</li>
         </ol>
       </div>
       <div class="act">
@@ -425,6 +430,14 @@ for (const b of document.querySelectorAll("[data-copy]")) {   // the commands, c
     setTimeout(() => { b.textContent = "Copy"; }, 1600);
   });
 }
+// a link to a part folded away (#newer): open its fold, then go there
+function unfold() {
+  const t = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
+  const d = t && t.closest("details");
+  if (d && !d.open) { d.open = true; t.scrollIntoView(); }
+}
+addEventListener("hashchange", unfold);
+unfold();
 // the screens: each loop plays while it is on screen; with reduced motion they wait for a press
 (function () {
   const vids = [...document.querySelectorAll("video[data-loop]")];

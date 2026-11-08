@@ -5,8 +5,8 @@ licences:
 
 | Part | Licence | Source |
 | --- | --- | --- |
-| fm1-base, the platform the firmware, the installer page and the follow page are built on (unmodified, at commit `2d8ed748cdade582c65d9fc8d8cf17da4ddadec8`) | MPL-2.0 (`LICENSES/MPL-2.0.txt`) | <https://github.com/charlesvestal/fm1-base/tree/2d8ed748cdade582c65d9fc8d8cf17da4ddadec8> |
-| felucca-bsp, fm1-base's board support (a submodule of it, at commit `773b0b99f5ade1a30d1879b2618c6c3c3e6ba031`) | MPL-2.0 | <https://github.com/hugelton/felucca-bsp> |
+| fm1-base, the platform the firmware, the installer page and the follow page are built on (unmodified, at commit `b0976f295ccaeaf77a8053a5a785a9cc21f5345f`) | MPL-2.0 (`LICENSES/MPL-2.0.txt`) | <https://github.com/charlesvestal/fm1-base/tree/b0976f295ccaeaf77a8053a5a785a9cc21f5345f> |
+| felucca-bsp, fm1-base's board support (a submodule of it, at commit `5b0879bfadc69a17dbebb917fb6b86d516f19c44`) | MPL-2.0 | <https://github.com/hugelton/felucca-bsp> |
 | The SBC encoder of Android's Bluetooth stack, JieLi AC79 SDK parts and the radio tables in fm1-base | Apache-2.0 (`LICENSES/Apache-2.0.txt`) | in fm1-base, as above |
 | micro-ecc (Kenneth MacKay) | BSD-2-Clause (`LICENSES/BSD-2-Clause-micro-ecc.txt`) | in fm1-base, as above |
 | m-bootloader 1.2 (Julius Vitkauskas), which the installer offers | MIT (`LICENSES/MIT-m-bootloader.txt`) | <https://github.com/jvitkauskas/m-bootloader> |
