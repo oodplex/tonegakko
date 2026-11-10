@@ -1,0 +1,10 @@
+{
+  "what": "An island that plays music. Small creatures called the Sonari wander and sing together: choose who plays, play them yourself from the keys, take any sound apart, bring in the rain and turn day into night. What they play becomes new styles to find, 32 of them, kept in the Book.",
+  "author": "oodplex",
+  "kinds": [
+    "other"
+  ],
+  "cheat": "https://oodplex.github.io/tonegakko/#controls",
+  "image": "docs/media/hero.png",
+  "color": "#41BAB4"
+}
