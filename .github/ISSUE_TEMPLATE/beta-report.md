@@ -5,7 +5,7 @@ title: ""
 labels: beta
 ---
 
-**The version on the boot screen** (for example 0.40.1-BETA1):
+**The version on the boot screen** (for example 0.40.2-BETA1):
 
 **What you did:**
 

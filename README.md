@@ -1,12 +1,12 @@
 <p align="center"><img src="media/logo.png" width="404" alt="tonegakko"></p>
 
 <p align="center"><b>New firmware for the M-VAVE FM-1. An island that plays music.</b><br>
-Open beta · 0.40 beta 1.0.1</p>
+Open beta · 0.40 beta 1.0.2</p>
 
 <p align="center">
   <a href="https://oodplex.github.io/tonegakko/install/"><b>Install from your browser</b></a> ·
   <a href="https://oodplex.github.io/tonegakko/">The guide</a> ·
-  <a href="https://oodplex.github.io/tonegakko/download/tonegakko-0.40.1-beta1-installer.zip">Download the zip</a> ·
+  <a href="https://oodplex.github.io/tonegakko/download/tonegakko-0.40.2-beta1-installer.zip">Download the zip</a> ·
   <a href="https://github.com/oodplex/tonegakko/issues/new?template=beta-report.md">Report something</a>
 </p>
 
@@ -20,23 +20,23 @@ You need an FM-1 with its USB cable, and a computer with Chrome or Edge.
 
 1. Plug in the FM-1 and switch it on.
 2. Open **[the installer](https://oodplex.github.io/tonegakko/install/)** in Chrome or Edge. When it asks to use MIDI devices, allow it.
-3. Follow the page. The FM-1 restarts into Tonegakko, and the boot screen shows `0.40.1-BETA1`.
+3. Follow the page. The FM-1 restarts into Tonegakko, and the boot screen shows `0.40.2-BETA1`.
 
 The same installer can put M-VAVE's own firmware back at any time. Installing is at your own risk. If your FM-1 runs M-VAVE's "FM1 Open" firmware, put the standard firmware back first.
 
-**New in 1.0.1:** it works on the newer FM-1s too. Those sold since autumn 2026 (many from AliExpress, the logo printed on the front) have a different memory chip, a UC25HQ80, which beta 1 did not know. The game is the same as beta 1.
+**Since beta 1:** it works on the newer FM-1s too. Those sold since autumn 2026 (many from AliExpress, the logo printed on the front) have a different memory chip, a UC25HQ80, which beta 1 did not know (fixed in 1.0.1). And it has its own identity number, `FM-1_736004002` (1.0.2), so The Firmware Hub can tell it apart from other firmwares. The game is the same as beta 1.
 
 <details>
 <summary>Put beta 1 on one of the newer FM-1s?</summary>
 
-On those FM-1s beta 1 plays, but keeps nothing after switching off, and the installer page cannot reach it to update it. Put M-VAVE's firmware back first, then install 1.0.1:
+On those FM-1s beta 1 plays, but keeps nothing after switching off, and the installer page cannot reach it to update it. Put M-VAVE's firmware back first, then install this version:
 
 1. Hold **REC** while you switch the FM-1 on. It starts in the chip's own update mode.
 2. Plug it into a Mac or Linux computer and run felucca-bsp's rescue in a terminal. It backs the FM-1 up, then writes M-VAVE's own firmware:
    ```sh
    bash -c "$(curl -fsSL https://raw.githubusercontent.com/hugelton/felucca-bsp/main/tools/fm1_rescue.sh)"
    ```
-3. Install 1.0.1 from [the installer](https://oodplex.github.io/tonegakko/install/) as usual.
+3. Install this version from [the installer](https://oodplex.github.io/tonegakko/install/) as usual.
 
 On Windows, or if it does not work, [open an issue](https://github.com/oodplex/tonegakko/issues/new?template=beta-report.md) and we will help.
 </details>
@@ -44,16 +44,16 @@ On Windows, or if it does not work, [open an issue](https://github.com/oodplex/t
 <details>
 <summary>Installing offline, or from the command line</summary>
 
-Download [the installer zip](docs/download/tonegakko-0.40.1-beta1-installer.zip), unzip it, and serve the folder from a terminal:
+Download [the installer zip](docs/download/tonegakko-0.40.2-beta1-installer.zip), unzip it, and serve the folder from a terminal:
 
 ```sh
-cd tonegakko-0.40.1-beta1-installer && python3 -m http.server 8000
+cd tonegakko-0.40.2-beta1-installer && python3 -m http.server 8000
 ```
 
 Then open `http://localhost:8000/install/` in Chrome or Edge. Or, with [fm1-base](https://github.com/charlesvestal/fm1-base)'s installer (`pip3 install mido python-rtmidi`):
 
 ```sh
-python3 tools/fm1_install.py tonegakko-0.40.1-beta1.fwsc
+python3 tools/fm1_install.py tonegakko-0.40.2-beta1.fwsc
 ```
 
 Checksums: [SHA256SUMS.txt](docs/download/SHA256SUMS.txt)
@@ -108,7 +108,7 @@ This is a beta, so please [open an issue](https://github.com/oodplex/tonegakko/i
 
 | Path | What |
 | --- | --- |
-| `docs/` | The site at [oodplex.github.io/tonegakko](https://oodplex.github.io/tonegakko/): the guide, the installer (`install/`), the follow page (`follow/`), the firmware (`tonegakko-0.40.1-beta1.fwsc`, and in `firmware/` with m-bootloader 1.2) |
+| `docs/` | The site at [oodplex.github.io/tonegakko](https://oodplex.github.io/tonegakko/): the guide, the installer (`install/`), the follow page (`follow/`), the firmware (`tonegakko-0.40.2-beta1.fwsc`, and in `firmware/` with m-bootloader 1.2) |
 | `docs/download/` | The installer zip, for installing offline, and the checksums |
 | `LICENSES/`, `NOTICE.md` | The licences of what the firmware and the installer are built from |
 

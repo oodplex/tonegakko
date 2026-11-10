@@ -2,7 +2,7 @@
 <!-- SPDX-License-Identifier: MPL-2.0
      Tonegakko followed in Chrome (app/follow.c): the FM-1 sends the game's state as it changes, over USB-MIDI, and
      follow.wasm (the app itself, built to draw only: site/follow_web.c) draws each frame here, as the FM-1 draws it.
-     site/make_follow.py fills in TONEGAKKO and 0.40.1-beta1 and puts record.js in. -->
+     site/make_follow.py fills in TONEGAKKO and 0.40.2-beta1 and puts record.js in. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -59,7 +59,7 @@ a { color: var(--accent-ink); }
 <main>
 <header>
   <h1>Follow</h1>
-  <p>TONEGAKKO 0.40.1-beta1: the FM-1's screen, drawn here from the game as it plays.</p>
+  <p>TONEGAKKO 0.40.2-beta1: the FM-1's screen, drawn here from the game as it plays.</p>
 </header>
 <div class="bar" role="group" aria-label="Following">
   <button id="connect" class="primary" type="button">Connect</button>
@@ -91,7 +91,7 @@ a { color: var(--accent-ink); }
 </main>
 <script>
 "use strict";
-const VERSION = "0.40.1-beta1";
+const VERSION = "0.40.2-beta1";
 const $ = (id) => document.getElementById(id);
 const screenEl = $("screen"), sctx = screenEl.getContext("2d"), img = sctx.createImageData(240, 240);
 const dotEl = $("dot"), statusEl = $("status"), numsEl = $("nums"), connectBtn = $("connect"), portSel = $("port");

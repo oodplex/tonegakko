@@ -1,2 +1,2 @@
-11af4ef9c96ef3de9fd2bd4ca06e0f68d2094633954b03c2ba3b922c4f416a33  tonegakko-0.40.1-beta1-installer.zip
-aa43dbfd66996db6fe01acfe1200aeaa9cb1e70a5f68583b0c2de8d4cdf808e9  tonegakko-0.40.1-beta1.fwsc
+a56e995ee23876aa4ed0ae94dfac8041cdbf2a09c395c20671e47fed9f734bf3  tonegakko-0.40.2-beta1-installer.zip
+dd1d6948bbb1d700ce410dacf456867a40aaeb0ca7ddb9472391653495bda93d  tonegakko-0.40.2-beta1.fwsc
